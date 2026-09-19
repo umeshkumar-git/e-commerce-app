@@ -2,8 +2,15 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import pg from "pg";
+import cloudinary from "./config/cloudinary.js";
 
 dotenv.config();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const { Pool } = pg;
 
@@ -45,6 +52,26 @@ app.get("/api/db-test", async (req, res) => {
 
 app.get("/", (req, res) => {
   res.send("Backend API is running 🚀");
+});
+
+app.get("/api/cloudinary-test", async (req, res) => {
+  try {
+    const result = await cloudinary.api.ping();
+
+    res.json({
+      success: true,
+      message: "Cloudinary connected successfully",
+      status: result.status,
+    });
+  } catch (error) {
+    console.error("Cloudinary connection error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Cloudinary connection failed",
+      error: error.message,
+    });
+  }
 });
 
 app.listen(PORT, () => {
